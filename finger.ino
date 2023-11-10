@@ -1,4 +1,5 @@
 #include <Adafruit_Fingerprint.h>
+#define mySerial Serial2  // use for ESP32
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 #define MODEM_RX 16
 #define MODEM_TX 17
@@ -245,6 +246,11 @@ uint8_t getFingerprintID(int ids, int namas) {
     Serial.println("Found a print match!");
     if (finger.fingerID == ids) {
       digitalWrite(relayPin, !digitalRead(relayPin));  // Toggle status relay
+      if (digitalRead(buzzerPin) == HIGH) {
+        digitalWrite(buzzerPin, LOW);
+        digitalWrite(relayPin, LOW);
+        Serial.println("Buzzer dimatikan");
+      }
     } else if (ids == NULL) {
       digitalWrite(relayPin, LOW);
     }

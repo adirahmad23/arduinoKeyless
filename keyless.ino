@@ -1,12 +1,15 @@
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Arduino_JSON.h>
-#define mySerial Serial2  // use for ESP32
+
+
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
-
-SoftwareSerial gpsSerial(26, 25);  // RX, TX
+HardwareSerial gpsSerial(1);  // RX (D26), TX (D27)
 TinyGPSPlus gps;
+
+
 unsigned long previousGpsMillis = 0;
 const unsigned long gpsInterval = 1000;  // Interval waktu untuk membaca GPS dalam milidetik (misalnya, 15 detik)
 
@@ -23,7 +26,7 @@ const long interval = 5000;  // Interval waktu dalam milidetik (5 detik)
 
 void setup() {
   Serial.begin(115200);
-  gpsSerial.begin(9600);
+  gpsSerial.begin(9600, SERIAL_8N1, 26, 27);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -46,8 +49,8 @@ void loop() {
 
       if (httpResponseCode > 0) {
         String response = http.getString();
-        Serial.println("Respon JSON:");
-        Serial.println(response);
+        // Serial.println("Respon JSON:");
+        // Serial.println(response);
 
         JSONVar jsonObj = JSON.parse(response);
         if (JSON.typeof(jsonObj) == "array") {
@@ -120,7 +123,7 @@ void sendDataToDatabase() {
       Serial.println(payload);
     } else {
       Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
+      // Serial.println(httpResponseCode);
     }
     // Free resources
     http.end();
@@ -129,58 +132,3 @@ void sendDataToDatabase() {
   }
 }
 
-void sendgps() {
-  Serial.println("berhasil");
-  //Send an HTTP POST request every 10 minutes
-  //Check WiFi connection status
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    unsigned long currentMillis = millis();
-
-    if (currentMillis - previousGpsMillis >= gpsInterval) {
-      previousGpsMillis = currentMillis;
-
-      float latitude;
-      float longitude;
-      
-      while (gpsSerial.available() > 0) {
-        if (gps.encode(gpsSerial.read())) {
-          if (gps.location.isValid()) {
-            // Mendapatkan data latitude dan longitude
-            latitude = gps.location.lat();
-            longitude = gps.location.lng();
-
-            // Mencetak data latitude dan longitude ke Serial Monitor
-            Serial.print(latitude, 6);
-            Serial.print(",");
-            Serial.print(longitude, 6);
-            Serial.println();
-          }
-        }
-      }
-      
-      String serverPath = String(serverName) + "?gps=" + String(latitude, 6) + "," + String(longitude, 6);
-
-      // Lanjutkan dengan mengirimkan permintaan HTTP ke server
-      http.begin(serverPath.c_str());
-
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-
-      if (httpResponseCode > 0) {
-        hasil = 0;
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        String payload = http.getString();
-        Serial.println(payload);
-      } else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
-      }
-      // Free resources
-      http.end();
-    }
-  } else {
-    Serial.println("WiFi Disconnected");
-  }
-}
