@@ -30,14 +30,25 @@ void setupfinger() {
 }
 
 void enroll(String idname) {
-  Serial.println("Ready to enroll a fingerprint!");
-  Serial.println("Please type in the ID # (from 1 to 127) you want to save this finger as...");
+  Serial.println("Ready to enroll a fingerprint!");                                              // 1
+  Serial.println("Please type in the ID # (from 1 to 127) you want to save this finger as...");  //2
+
+  lcd.clear();
+  lcd.print("Ready to enroll");
+  lcd.setCursor(0, 1);
+  lcd.print("Enter ID # (1 to 127)");
+
   id = idname.toInt();  // Konversi string ke bilangan bulat;
   if (id == 0) {        // ID #0 not allowed, try again!
     return;
   }
-  Serial.print("Enrolling ID #");
+  Serial.print("Enrolling ID #");  //3
   Serial.println(id);
+
+  lcd.clear();
+  lcd.print("Enrolling ID #");
+  lcd.print(id);
+
   getFingerprintEnroll(id, hasil);
 }
 
@@ -45,13 +56,11 @@ void FunctionFinger(String idname, String nama) {
   int ids = atoi(idname.c_str());  // Mengonversi string menjadi int
   int namas = atoi(nama.c_str());  // Mengonversi string menjadi int
   int faces = atoi(nama.c_str());  // Mengonversi string menjadi int
-
-
-  getFingerprintID(ids, namas);  // Mengirim int ke fungsi getFingerprintID
-  delay(1050);                   // Jangan lakukan ini dengan kecepatan penuh.
+  getFingerprintID(ids, namas);    // Mengirim int ke fungsi getFingerprintID
+  delay(1050);                     // Jangan lakukan ini dengan kecepatan penuh.
 }
 
-//FUNGSI ENROLL
+//FUNGSI ENROLL=================================================================================
 uint8_t getFingerprintEnroll(int id, int &hasil) {
   int p = -1;
   Serial.print("Waiting for valid finger to enroll as #");
@@ -63,7 +72,8 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
         Serial.println("Image taken");
         break;
       case FINGERPRINT_NOFINGER:
-        Serial.print(".");
+        lcd.clear();
+        lcd.print("Tap Finger Print");
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
         Serial.println("Communication error");
@@ -82,7 +92,9 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
   p = finger.image2Tz(1);
   switch (p) {
     case FINGERPRINT_OK:
-      Serial.println("Image converted");
+      Serial.println("Image converted");  // 5
+      lcd.clear();
+      lcd.print("Image converted");
       break;
     case FINGERPRINT_IMAGEMESS:
       Serial.println("Image too messy");
@@ -101,7 +113,10 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
       return p;
   }
 
-  Serial.println("Remove finger");
+  Serial.println("Remove finger");  //6
+  lcd.clear();
+  lcd.print("Remove finger");
+
   delay(2000);
   p = 0;
   while (p != FINGERPRINT_NOFINGER) {
@@ -110,7 +125,9 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
   Serial.print("ID ");
   Serial.println(id);
   p = -1;
-  Serial.println("Place same finger again");
+  Serial.println("Place same finger again");  // 7
+  lcd.clear();
+  lcd.print("Tap Finger Again");
   while (p != FINGERPRINT_OK) {
     p = finger.getImage();
     switch (p) {
@@ -162,12 +179,16 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
 
   p = finger.createModel();
   if (p == FINGERPRINT_OK) {
-    Serial.println("Prints matched!");
+    Serial.println("Prints matched!");  // 8
+    lcd.clear();
+    lcd.print("Finger matched!");
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
   } else if (p == FINGERPRINT_ENROLLMISMATCH) {
-    Serial.println("Fingerprints did not match");
+    Serial.println("Finger not match");
+    lcd.clear();
+    lcd.print("Finger not match");
     return p;
   } else {
     Serial.println("Unknown error");
@@ -178,7 +199,10 @@ uint8_t getFingerprintEnroll(int id, int &hasil) {
   p = finger.storeModel(id);
   if (p == FINGERPRINT_OK) {
     hasil = 1;
-    Serial.println("Stored!");
+    Serial.println("Stored!");  // 9
+    lcd.clear();
+    lcd.print("Finger Print Added");
+
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
@@ -204,6 +228,12 @@ uint8_t getFingerprintID(int ids, int namas) {
       break;
     case FINGERPRINT_NOFINGER:
       Serial.println("No finger detected");
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("No finger detect");
+      lcd.setCursor(0, 1);
+      lcd.print("Tap Attempt:" + String(failedAttempts));
+      delay(2000);  // Delay for 2000 milliseconds (2 seconds)
       return p;
     case FINGERPRINT_PACKETRECIEVEERR:
       Serial.println("Communication error");
@@ -243,9 +273,13 @@ uint8_t getFingerprintID(int ids, int namas) {
   // OK converted!
   p = finger.fingerFastSearch();
   if (p == FINGERPRINT_OK) {
-    Serial.println("Found a print match!");
+    Serial.println("Found a finger");
+    lcd.clear();
+    lcd.print("Found a finger");
+    delay(2000);  // Delay for 2000 milliseconds (2 seconds)
     if (finger.fingerID == ids) {
       digitalWrite(relayPin, !digitalRead(relayPin));  // Toggle status relay
+      failedAttempts = 0;
       if (digitalRead(buzzerPin) == HIGH) {
         digitalWrite(buzzerPin, LOW);
         digitalWrite(relayPin, LOW);
@@ -260,6 +294,12 @@ uint8_t getFingerprintID(int ids, int namas) {
     return p;
   } else if (p == FINGERPRINT_NOTFOUND) {
     Serial.println("Did not find a match");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Finger not found");
+    lcd.setCursor(0, 1);
+    lcd.print("Tap Attempt:" + String(failedAttempts));
+    delay(2000);       // Delay for 2000 milliseconds (2 seconds)
     failedAttempts++;  // Tambahkan jumlah percobaan yang gagal
     if (failedAttempts >= 3) {
       Serial.println("3 percobaan gagal. Mengaktifkan buzzer.");
@@ -276,6 +316,8 @@ uint8_t getFingerprintID(int ids, int namas) {
   Serial.print(finger.fingerID);
   Serial.print(" with confidence of ");
   Serial.println(finger.confidence);
-
+  lcd.clear();
+  lcd.print("Finger Found : " + String(finger.fingerID));
+  delay(2000);  // Delay for 2000 milliseconds (2 seconds)
   return finger.fingerID;
 }

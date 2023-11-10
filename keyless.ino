@@ -46,7 +46,7 @@ void setup() {
 }
 
 void loop() {
-  lcdloop();
+
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
@@ -54,7 +54,6 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
       http.begin(serverName);
-
       int httpResponseCode = http.GET();
 
       if (httpResponseCode > 0) {
@@ -81,6 +80,8 @@ void loop() {
               }
             } else if (proses == "1" && face == "1") {
               FunctionFinger(idname, nama);
+            } else {
+              lcdloop();
             }
             // Periksa apakah "face" ada dalam data dan nilainya "1"
             if (data.hasOwnProperty("face") && face == "1") {

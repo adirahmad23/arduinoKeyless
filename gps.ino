@@ -30,11 +30,11 @@ void sendDataToServer(float latitude, float longitude) {
 
   int httpCode = http.GET();
 
-  if (httpCode == HTTP_CODE_OK) {
-    // Serial.println("Data berhasil dikirim ke server.");
-  } else {
-    // Serial.println("Gagal mengirim data ke server.");
-  }
+  // if (httpCode == HTTP_CODE_OK) {
+  //   // Serial.println("Data berhasil dikirim ke server.");
+  // } else {
+  //   // Serial.println("Gagal mengirim data ke server.");
+  // }
 
   http.end();
 }
