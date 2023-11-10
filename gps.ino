@@ -3,8 +3,7 @@ void sendgps() {
   if (currentMillis - previousGpsMillis >= gpsInterval) {
     previousGpsMillis = currentMillis;
 
-    float latitude = 0.0;
-    float longitude = 0.0;
+
     bool gpsDataAvailable = false;
 
     while (gpsSerial.available() > 0) {
@@ -16,10 +15,10 @@ void sendgps() {
         }
       }
     }
-
     if (gpsDataAvailable) {
       sendDataToServer(latitude, longitude);
     }
+    lcdgps(latitude, longitude);
   }
 }
 
@@ -38,4 +37,10 @@ void sendDataToServer(float latitude, float longitude) {
   }
 
   http.end();
+}
+
+void lcdgps(float latitude, float longitude) {
+
+  String combinedString = String(longitude, 4) + "," + String(latitude, 4);
+  lcd.print(combinedString);  // Ganti dengan nilai longitude yang sesuai
 }

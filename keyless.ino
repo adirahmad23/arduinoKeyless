@@ -24,9 +24,18 @@ const char* serverName = "https://soemnoer.my.id/cekdaftar.php";  // URL server 
 unsigned long previousMillis = 0;
 const long interval = 5000;  // Interval waktu dalam milidetik (5 detik)
 
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Alamat I2C layar LCD dan ukuran (16x2)
+
+float latitude = 0.0;
+float longitude = 0.0;
+
 void setup() {
   Serial.begin(115200);
   gpsSerial.begin(9600, SERIAL_8N1, 26, 27);
+  lcdsetup();
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -37,6 +46,7 @@ void setup() {
 }
 
 void loop() {
+  lcdloop();
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
@@ -131,4 +141,3 @@ void sendDataToDatabase() {
     Serial.println("WiFi Disconnected");
   }
 }
-
