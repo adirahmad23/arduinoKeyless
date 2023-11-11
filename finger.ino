@@ -5,7 +5,6 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 #define MODEM_TX 17
 const int buzzerPin = 33;  // Pin GPIO yang digunakan untuk mengendalikan buzzer
 int failedAttempts = 0;
-
 void setupfinger() {
   while (!Serial)
     ;
@@ -27,6 +26,8 @@ void setupfinger() {
   digitalWrite(buzzerPin, LOW);
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, LOW);
+  pinMode(relayStart, OUTPUT);
+  digitalWrite(relayStart, LOW);
 }
 
 void enroll(String idname) {
@@ -278,13 +279,23 @@ uint8_t getFingerprintID(int ids, int namas) {
     lcd.print("Found a finger");
     delay(2000);  // Delay for 2000 milliseconds (2 seconds)
     if (finger.fingerID == ids) {
-      digitalWrite(relayPin, !digitalRead(relayPin));  // Toggle status relay
-      failedAttempts = 0;
-      if (digitalRead(buzzerPin) == HIGH) {
+      if ((digitalRead(buzzerPin) == HIGH) && (digitalRead(relayPin) == LOW)) {
         digitalWrite(buzzerPin, LOW);
-        digitalWrite(relayPin, LOW);
-        Serial.println("Buzzer dimatikan");
-      }
+      } else {
+        digitalWrite(relayPin, !digitalRead(relayPin));
+        if (digitalRead(relayPin) == HIGH) {
+          digitalWrite(relayStart, HIGH);  // Nyalakan relayStart
+          delay(5000);                     // Tunggu 5 detik
+          digitalWrite(relayStart, LOW);
+        }
+        failedAttempts = 0;
+
+        if ((digitalRead(buzzerPin) == HIGH)) {
+          digitalWrite(buzzerPin, LOW);
+          digitalWrite(relayPin, LOW);
+        }
+      }  // Toggle status relay
+
     } else if (ids == NULL) {
       digitalWrite(relayPin, LOW);
     }
@@ -302,8 +313,11 @@ uint8_t getFingerprintID(int ids, int namas) {
     delay(2000);       // Delay for 2000 milliseconds (2 seconds)
     failedAttempts++;  // Tambahkan jumlah percobaan yang gagal
     if (failedAttempts >= 3) {
-      Serial.println("3 percobaan gagal. Mengaktifkan buzzer.");
       digitalWrite(buzzerPin, HIGH);  // Nyalakan buzzer
+    }
+
+    if ((digitalRead(relayPin) == HIGH) && ((digitalRead(buzzerPin) == HIGH))) {
+      digitalWrite(relayPin, LOW);
     }
     return p;
   } else {

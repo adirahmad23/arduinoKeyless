@@ -17,7 +17,7 @@ const unsigned long gpsInterval = 1000;  // Interval waktu untuk membaca GPS dal
 uint8_t id;
 int hasil = 0;
 const int relayPin = 18;
-
+const int relayStart = 19;
 const char* ssid = "SoemNoer";                                    // Nama jaringan WiFi Anda
 const char* password = "adirahmad";                               // Kata sandi WiFi Anda
 const char* serverName = "https://soemnoer.my.id/cekdaftar.php";  // URL server JSON sesuai kebutuhan Anda
