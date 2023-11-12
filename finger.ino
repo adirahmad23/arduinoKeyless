@@ -281,12 +281,14 @@ uint8_t getFingerprintID(int ids, int namas) {
     if (finger.fingerID == ids) {
       if ((digitalRead(buzzerPin) == HIGH) && (digitalRead(relayPin) == LOW)) {
         digitalWrite(buzzerPin, LOW);
+        failedAttempts = 0;
       } else {
         digitalWrite(relayPin, !digitalRead(relayPin));
         if (digitalRead(relayPin) == HIGH) {
           digitalWrite(relayStart, HIGH);  // Nyalakan relayStart
           delay(5000);                     // Tunggu 5 detik
           digitalWrite(relayStart, LOW);
+          failedAttempts = 0;
         }
         failedAttempts = 0;
 
@@ -309,7 +311,7 @@ uint8_t getFingerprintID(int ids, int namas) {
     lcd.setCursor(0, 0);
     lcd.print("Finger not found");
     lcd.setCursor(0, 1);
-    lcd.print("Tap Attempt:" + String(failedAttempts));
+    lcd.print("Tap Attempt:" + String(failedAttempts + 1));
     delay(2000);       // Delay for 2000 milliseconds (2 seconds)
     failedAttempts++;  // Tambahkan jumlah percobaan yang gagal
     if (failedAttempts >= 3) {

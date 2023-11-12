@@ -42,5 +42,5 @@ void sendDataToServer(float latitude, float longitude) {
 void lcdgps(float latitude, float longitude) {
 
   String combinedString = String(longitude, 4) + "," + String(latitude, 4);
-  lcd.print(combinedString);  // Ganti dengan nilai longitude yang sesuai
+  // lcd.print(combinedString);  // Ganti dengan nilai longitude yang sesuai
 }

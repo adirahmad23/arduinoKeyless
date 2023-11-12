@@ -18,8 +18,11 @@ uint8_t id;
 int hasil = 0;
 const int relayPin = 18;
 const int relayStart = 19;
-const char* ssid = "SoemNoer";                                    // Nama jaringan WiFi Anda
+
+const char* ssid = "POCO X3 NFC";                                    // Nama jaringan WiFi Anda
 const char* password = "adirahmad";                               // Kata sandi WiFi Anda
+
+
 const char* serverName = "https://soemnoer.my.id/cekdaftar.php";  // URL server JSON sesuai kebutuhan Anda
 unsigned long previousMillis = 0;
 const long interval = 5000;  // Interval waktu dalam milidetik (5 detik)
